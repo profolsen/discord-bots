@@ -1,6 +1,6 @@
 import discord
-
-token = ''
+from bots import tokens_util
+token = tokens_util.load_token_from_file('simon-says')
 
 client = discord.Client()
 @client.event
