@@ -1,13 +1,24 @@
 import sqlite3
 import os
+from pathlib import Path
 
-def connect() :
-    print(os.getenv('PROJECT_PATH') + '/data/database.db')
-    return sqlite3.connect(os.getenv('PROJECT_PATH') + '/data/database.db')
+
+def connect(new) :
+    i = 0
+    while Path(os.getenv('PROJECT_PATH') + '/data/database' + str(i) + '.db').is_file() :
+        i += 1
+    i = 1 if not new and i == 0 else i
+    if new :
+        path = os.getenv('PROJECT_PATH') + '/data/database' + str(i) + '.db'
+    else :
+        path = os.getenv('PROJECT_PATH') + '/data/database' + str(i-1) + '.db'
+    return sqlite3.connect(path)
 
 def reset(conn) :
     conn.execute('drop table if exists entries;')
-    conn.execute('create table entries (moment datetime DEFAULT (datetime(\'now\', \'localtime\')), category text);')
+    conn.execute('create table entries (moment text DEFAULT (datetime(\'now\', \'localtime\')), category text);')
+    conn.commit()
+    conn.close()
 
 def update(conn, category, words) :
     #first add new columns to table if necessary.
@@ -34,6 +45,8 @@ def update(conn, category, words) :
                       + ", ".join([x[1] for x in valuepairs]) + ')'
     print(insertstatement)
     conn.execute(insertstatement)
+    conn.commit()
+    conn.close()
 
 def reportnow(conn) :
     columns = conn.execute('''SELECT * FROM entries''').description
@@ -42,6 +55,8 @@ def reportnow(conn) :
     wordcount = {}
     result = conn.execute(summaryquery)
     values = result.fetchall()
+    conn.commit()
+    conn.close()
     i = 0
     for c in result.description :
         #print(c[0] + ' ' + str(values[0][i]))
