@@ -9,6 +9,12 @@ client = discord.Client()
 async def on_ready():
     print('Logged in. Waiting...')
 
+#message events:
+#update category [attribute [...]]
+#report now
+#report csv
+
+
 @client.event
 async def on_message(message) :
     print('received: ' + message.content)

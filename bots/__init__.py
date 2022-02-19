@@ -4,4 +4,5 @@ from pathlib import Path
 path = Path(__file__)
 while not str(path).endswith('discord-bots') :
     path = path.parent
+os.environ['PROJECT_PATH'] = str(path.absolute())
 os.environ['TOKEN_PATH'] = str(path.absolute()) + '/tokens'
