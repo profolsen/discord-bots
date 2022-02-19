@@ -2,7 +2,7 @@ import discord
 import sys
 from bots.tokens_util import load_token_from_file
 from datetime import datetime
-token=load_token_from_file('florence')
+token = load_token_from_file('florence')
 
 client = discord.Client()
 @client.event
