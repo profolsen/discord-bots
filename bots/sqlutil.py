@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from random import randint
 from pathlib import Path
 
 
@@ -63,5 +64,45 @@ def reportnow(conn) :
         wordcount[c[0]] = values[0][i]
         i += 1
     return wordcount
+
+def dailydata(conn, category, days, words) :
+    fromclause = " FROM entries "
+    whereclause = " WHERE moment > (SELECT DATETIME(\'now\', \'-" + str(days) + " day\')) AND category = \'" + category + "\' "
+    groupbyclause = "GROUP BY DATE(moment)"
+    if len(words) > 0 :
+        selectclause = "SELECT date(moment) as moment, " + ", ".join([("round(avg(" + word + "), 3) as avg_" + word) for word in words]) + " "
+    else :
+        selectclause = "SELECT date(moment) as moment, COUNT(*) as " + category + " "
+    query = selectclause + fromclause + whereclause + groupbyclause
+    print(query)
+    cursor = conn.execute(query)
+    rows = cursor.fetchall()
+    columns = cursor.description
+    header = ", ".join([column[0] for column in columns]) + "\n"
+    data = "\n".join([(", ".join([str(value) for value in values])) for values in rows])
+    return header + data;
+
+def randompopulate(conn) :
+    conn.execute('drop table if exists entries;')
+    conn.execute('create table entries (moment text DEFAULT (datetime(\'now\', \'localtime\')), category text, ' +\
+                 'a integer, b integer, c integer, d integer, e integer);')
+    for i in range(0, 5000) :
+        category = randomchoice(['X', 'Y', 'Z'])
+        word = randomchoice(['a', 'b', 'c', 'd', 'e'])
+        insertstatement = "INSERT INTO entries(moment, category, " + word + ") VALUES ("
+        insertstatement += "\'" + randomdatetime(2022, '02') + "\', \'" + category + "\', " + str(randint(1, 10)) + ")"
+        print(insertstatement)
+        conn.execute(insertstatement)
+    conn.commit()
+    conn.close()
+
+def randomdatetime(year, month) :
+    datetimestring = str(year) + "-" + str(month) + "-"
+    datetimestring += str(randint(10, 28)) + " "
+    datetimestring += str(randint(10, 12)) + ":" + str(randint(10, 59)) + ":" + str(randint(10, 59))
+    return datetimestring
+
+def randomchoice(categories) :
+    return categories[randint(0, len(categories)-1)]
 
 
