@@ -82,11 +82,38 @@ def dailydata(conn, category, days, words) :
     data = "\n".join([(", ".join([str(value) for value in values])) for values in rows])
     return header + data;
 
+#the time diff query:
+#select diff, count(*) from (select *,
+#       (strftime('%s', moment) - (select strftime('%s', max(i.moment)) from
+#            entries i where strftime('%s',i.moment) < strftime('%s', entries.moment) and i.category = 'Z')) / (60*60) as diff
+#        from entries where category = 'Y') x group by x.diff;
+
+def timediff(conn, cause, effect) :
+    query = " select diff, count(*) as frequency from (select *, " +\
+        " (strftime('%s', moment) - (select strftime('%s', max(i.moment)) from " +\
+        " entries i where strftime('%s',i.moment) < strftime('%s', entries.moment) and i.category = \'" + cause + "\')) / (60*60) as diff " +\
+        " from entries where category = \'" + effect + "\') x group by x.diff"
+    cursor = conn.execute(query)
+    cursor = conn.execute(query)
+    return cursortocsv(cursor)
+
+def cursortocsv(cursor) :
+    rows = cursor.fetchall()
+    columns = cursor.description
+    header = ", ".join([column[0] for column in columns]) + "\n"
+    data = "\n".join([(", ".join([str(value) for value in values])) for values in rows])
+    return header + data;
+
+
+############################################################
+### FUNCTIONS TO SET UP TEST TABLE #########################
+############################################################
+
 def randompopulate(conn) :
     conn.execute('drop table if exists entries;')
     conn.execute('create table entries (moment text DEFAULT (datetime(\'now\', \'localtime\')), category text, ' +\
                  'a integer, b integer, c integer, d integer, e integer);')
-    for i in range(0, 5000) :
+    for i in range(0, 500) :
         category = randomchoice(['X', 'Y', 'Z'])
         word = randomchoice(['a', 'b', 'c', 'd', 'e'])
         insertstatement = "INSERT INTO entries(moment, category, " + word + ") VALUES ("
@@ -99,7 +126,7 @@ def randompopulate(conn) :
 def randomdatetime(year, month) :
     datetimestring = str(year) + "-" + str(month) + "-"
     datetimestring += str(randint(10, 28)) + " "
-    datetimestring += str(randint(10, 12)) + ":" + str(randint(10, 59)) + ":" + str(randint(10, 59))
+    datetimestring += str(randint(10, 23)) + ":" + str(randint(10, 59)) + ":" + str(randint(10, 59))
     return datetimestring
 
 def randomchoice(categories) :
