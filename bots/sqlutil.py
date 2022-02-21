@@ -40,10 +40,13 @@ def update(conn, category, words) :
             conn.execute(alterstatement)
     #construct the insert statement
     print(str(valuepairs))
-    insertstatement = 'insert into entries(category ' + ', '\
-                      + ", ".join([x[0] for x in valuepairs]) + ') '\
-                      ' values (\'' + category + '\', '\
-                      + ", ".join([x[1] for x in valuepairs]) + ')'
+    if len(words) != 0 :
+        insertstatement = 'insert into entries(category ' + ', '\
+                          + ", ".join([x[0] for x in valuepairs]) + ') '\
+                          ' values (\'' + category + '\', '\
+                          + ", ".join([x[1] for x in valuepairs]) + ')'
+    else :
+        insertstatement = 'insert into entries(category) values (\'' + category + '\')'
     print(insertstatement)
     conn.execute(insertstatement)
     conn.commit()
