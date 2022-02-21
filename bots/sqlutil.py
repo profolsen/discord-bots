@@ -76,11 +76,7 @@ def dailydata(conn, category, days, words) :
     query = selectclause + fromclause + whereclause + groupbyclause
     print(query)
     cursor = conn.execute(query)
-    rows = cursor.fetchall()
-    columns = cursor.description
-    header = ", ".join([column[0] for column in columns]) + "\n"
-    data = "\n".join([(", ".join([str(value) for value in values])) for values in rows])
-    return header + data;
+    return cursortocsv(cursor)
 
 #the time diff query:
 #select diff, count(*) from (select *,
@@ -96,6 +92,9 @@ def timediff(conn, cause, effect) :
     cursor = conn.execute(query)
     cursor = conn.execute(query)
     return cursortocsv(cursor)
+
+
+#Utiltiy functions.  Now we are getting meta!!!
 
 def cursortocsv(cursor) :
     rows = cursor.fetchall()
